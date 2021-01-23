@@ -87,32 +87,36 @@ Cor2<-cor(master[,-c(1,2,4,5,6)])
 pheatmap(Cor2)
 
 #Question 3: Estimate the following pooled OLS regression
+# create variables at t-1 time
+master_lag<-read_xlsx("D:/master_lag.xlsx")
+master_lag<-master_lag[duplicated(master_lag$CUSIP),]
 #3.1.with control variables
-OLScon<-lm(leverage~net_PPE_ratio+inventory_ratio+receivable_ratio+cash_ratio+firm_size+crisis+rolling_return,
-           data = master)
+OLScon<-lm(leverage~net_PPE_lag+inventory_lag+receivable_lag+size_lag+crisis+return_lag,
+           data = master_lag)
 summary(OLScon)
 ncvTest(OLScon) #test for heteroscedasticity
+vif(OLScon)
 #3.2. without control variables
-OLSnocon<-lm(leverage~net_PPE_ratio+inventory_ratio+receivable_ratio,data = master)
+OLSnocon<-lm(leverage~net_PPE_lag+inventory_lag+receivable_lag,data = master_lag)
 summary(OLSnocon)
 ncvTest(OLSnocon) #test for heteroscedasticity
 
 #Question 4: Panel regression
-pmaster<-pdata.frame(master)
+pmaster<-pdata.frame(master_lag)
 #4.1.With time fixed effects
-pregt<-plm(leverage~net_PPE_ratio+inventory_ratio+receivable_ratio+cash_ratio+firm_size+crisis+rolling_return,
+pregt<-plm(leverage~net_PPE_lag+inventory_lag+receivable_lag+size_lag+crisis+return_lag,
            data = pmaster,effect = "time",model = "within")
 summary(pregt)
 #4.2.With firm fixed effects
-pregf<-plm(leverage~net_PPE_ratio+inventory_ratio+receivable_ratio+cash_ratio+firm_size+crisis+rolling_return,
+pregf<-plm(leverage~net_PPE_lag+inventory_lag+receivable_lag+size_lag+crisis+return_lag,
            data = pmaster,effect = "individual",model = "within")
 summary(pregf)
 #4.3.With time and firm fixed effects
-pregtf<-plm(leverage~net_PPE_ratio+inventory_ratio+receivable_ratio+cash_ratio+firm_size+crisis+rolling_return,
+pregtf<-plm(leverage~net_PPE_lag+inventory_lag+receivable_lag+size_lag+crisis+return_lag,
            data = pmaster,effect = "twoways",model = "within")
 summary(pregtf)
 #4.4 with random effects
-pregran<-plm(leverage~net_PPE_ratio+inventory_ratio+receivable_ratio+cash_ratio+firm_size+crisis+rolling_return,
+pregran<-plm(leverage~net_PPE_lag+inventory_lag+receivable_lag+size_lag+crisis+return_lag,
              data = pmaster,model = "random")
 summary(pregran)
 #4.5 compare models
@@ -123,32 +127,30 @@ phtest(pregran,pregtf)
 
 #Question 6
 #OLS regression-short term
-regs<-lm(short_term_leverage~net_PPE_ratio+inventory_ratio+receivable_ratio+cash_ratio+firm_size+crisis+rolling_return,data = master)
+regs<-lm(short_term_leverage~net_PPE_lag+inventory_lag+receivable_lag+size_lag+crisis+return_lag,data = master_lag)
 summary(regs)
 #OLS regression-long term
-regl<-lm(long_term_leverage~net_PPE_ratio+inventory_ratio+receivable_ratio+cash_ratio+firm_size+crisis+rolling_return,data = master)
+regl<-lm(long_term_leverage~net_PPE_lag+inventory_lag+receivable_lag+size_lag+crisis+return_lag,data = master_lag)
 summary(regl)
 #panel regression-short term leverage
-pregs<-plm(short_term_leverage~net_PPE_ratio+inventory_ratio+receivable_ratio+cash_ratio+firm_size+crisis+rolling_return,
-           data = pmaster,effect = "twoways",model = "within")
+pregs<-plm(short_term_leverage~net_PPE_lag+inventory_lag+receivable_lag+size_lag+crisis+return_lag,data = pmaster,effect = "twoways",model = "within")
 summary(pregs)
 #panel regression-long term leverage
-pregl<-plm(long_term_leverage~net_PPE_ratio+inventory_ratio+receivable_ratio+cash_ratio+firm_size+crisis+rolling_return,
-           data = pmaster,effect = "twoways",model = "within")
+pregl<-plm(short_term_leverage~net_PPE_lag+inventory_lag+receivable_lag+size_lag+crisis+return_lag,data = pmaster,effect = "twoways",model = "within")
 summary(pregl)
 
 #Question 7
-reg7<-lm(leverage~net_PPE_ratio+inventory_ratio+receivable_ratio+
-           cash_ratio:net_PPE_ratio+cash_ratio:inventory_ratio+cash_ratio:receivable_ratio,data = master)
+reg7<-lm(leverage~net_PPE_lag+inventory_lag+receivable_lag+
+           net_PPE_lag:cash_lag+inventory_lag:cash_lag+receivable_lag:cash_lag,data = master_lag)
 summary(reg7)
 #Question 8
-reg8<-lm(leverage~net_PPE_ratio+inventory_ratio+receivable_ratio+
-           crisis:net_PPE_ratio+crisis:inventory_ratio+crisis:receivable_ratio,data = master)
+reg8<-lm(leverage~net_PPE_lag+inventory_lag+receivable_lag+
+           crisis:net_PPE_lag+crisis:inventory_lag+crisis:receivable_lag,data = master_lag)
 summary(reg8)
 #Question 9
 #generate a dummy variable naming 'D9' that equals 1 if the firm's rolling return is in the top 20% in the given year.
-master<-master%>%group_by(year)%>%mutate(D9=ifelse(rolling_return>=quantile(master$rolling_return,0.8),1,0))
+master_lag<-master_lag%>%group_by(year)%>%mutate(D9=ifelse(return_lag>=quantile(master_lag$return_lag,0.8),1,0))
 #interaction regression
-reg9<-lm(leverage~net_PPE_ratio+inventory_ratio+receivable_ratio+
-           D9:net_PPE_ratio+D9:inventory_ratio+D9:receivable_ratio,data = master)
+reg9<-lm(leverage~net_PPE_lag+inventory_lag+receivable_lag+
+           D9:net_PPE_lag+D9:inventory_lag+D9:receivable_lag,data = master_lag)
 summary(reg9)
