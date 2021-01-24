@@ -133,10 +133,10 @@ summary(regs)
 regl<-lm(long_term_leverage~net_PPE_lag+inventory_lag+receivable_lag+size_lag+crisis+return_lag,data = master_lag)
 summary(regl)
 #panel regression-short term leverage
-pregs<-plm(short_term_leverage~net_PPE_lag+inventory_lag+receivable_lag+size_lag+crisis+return_lag,data = pmaster,effect = "twoways",model = "within")
+pregs<-plm(short_term_leverage~net_PPE_lag+inventory_lag+receivable_lag+size_lag+crisis+return_lag,data = pmaster,effect = "time",model = "within")
 summary(pregs)
 #panel regression-long term leverage
-pregl<-plm(short_term_leverage~net_PPE_lag+inventory_lag+receivable_lag+size_lag+crisis+return_lag,data = pmaster,effect = "twoways",model = "within")
+pregl<-plm(long_term_leverage~net_PPE_lag+inventory_lag+receivable_lag+size_lag+crisis+return_lag,data = pmaster,effect = "time",model = "within")
 summary(pregl)
 
 #Question 7
